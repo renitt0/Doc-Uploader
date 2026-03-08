@@ -5,6 +5,7 @@ import api from '../services/api';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Login = () => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userEmail', email.toLowerCase());
       navigate('/dashboard');
     } catch {
       setError('Invalid email or password');
@@ -48,8 +49,17 @@ const Login = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input id="password" type="password" className="input" value={password}
-              onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+            <div className="input-wrapper">
+              <input id="password" type={showPassword ? 'text' : 'password'}
+                className="input" value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required autoComplete="current-password" />
+              <button type="button" className="password-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>

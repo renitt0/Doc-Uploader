@@ -219,7 +219,11 @@ const Dashboard = () => {
                         <td>{formatDate(doc.uploaded_at)}</td>
                         <td className="table-action-cell">
                           <button className="btn btn-outline"
-                            onClick={() => handleView(doc.id, doc.file_type)}>View</button>
+                            onClick={() => handleView(doc.id, doc.file_type)}
+                            disabled={doc.file_type === '.docx'}
+                            title={doc.file_type === '.docx' ? 'Word documents cannot be previewed in the browser' : 'Open in new tab'}>
+                            View
+                          </button>
                           <button className="btn btn-success"
                             onClick={() => handleDownload(doc.id, doc.original_filename)}>Download</button>
                           <button className="btn btn-danger"
@@ -246,7 +250,11 @@ const Dashboard = () => {
                     </p>
                     <div className="file-card-actions">
                       <button className="btn btn-outline"
-                        onClick={() => handleView(doc.id, doc.file_type)}>View</button>
+                        onClick={() => handleView(doc.id, doc.file_type)}
+                        disabled={doc.file_type === '.docx'}
+                        title={doc.file_type === '.docx' ? 'Word documents cannot be previewed in the browser' : 'Open in new tab'}>
+                        View
+                      </button>
                       <button className="btn btn-success"
                         onClick={() => handleDownload(doc.id, doc.original_filename)}>Save</button>
                       <button className="btn btn-danger"

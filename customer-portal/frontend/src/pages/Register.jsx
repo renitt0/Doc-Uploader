@@ -6,6 +6,8 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,14 +52,32 @@ const Register = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input id="password" type="password" className="input" value={password}
-              onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
+            <div className="input-wrapper">
+              <input id="password" type={showPassword ? 'text' : 'password'}
+                className="input" value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required autoComplete="new-password" />
+              <button type="button" className="password-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input id="confirmPassword" type="password" className="input" value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)} required autoComplete="new-password" />
+            <div className="input-wrapper">
+              <input id="confirmPassword" type={showConfirm ? 'text' : 'password'}
+                className="input" value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required autoComplete="new-password" />
+              <button type="button" className="password-toggle"
+                onClick={() => setShowConfirm((v) => !v)}
+                aria-label={showConfirm ? 'Hide password' : 'Show password'}>
+                {showConfirm ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>

@@ -46,7 +46,8 @@ def root():
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED, tags=["auth"])
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     """Register a new user."""
-    existing = db.query(User).filter(User.email == user_in.email).first()
+    email = user_in.email.lower().strip()
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,7 +55,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         )
 
     new_user = User(
-        email=user_in.email,
+        email=email,
         hashed_password=hash_password(user_in.password),
     )
     db.add(new_user)
@@ -70,7 +71,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     Login endpoint that returns a JWT token.
     OAuth2PasswordRequestForm expects 'username' (which we use as email) and 'password'.
     """
-    user = db.query(User).filter(User.email == form_data.username).first()
+    email = form_data.username.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
     
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -150,6 +152,13 @@ def list_documents(
     return db.query(Document).filter(Document.user_id == current_user.id).all()
 
 
+MIME_TYPES = {
+    ".pdf": "application/pdf",
+    ".jpg": "image/jpeg", 
+    ".png": "image/png",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+}
+
 @app.get("/documents/{document_id}/download", tags=["documents"])
 def download_document(
     document_id: int,
@@ -180,10 +189,13 @@ def download_document(
             detail="File not found on disk"
         )
 
+    extension = os.path.splitext(document.stored_filename)[1].lower()
+    media_type = MIME_TYPES.get(extension, "application/octet-stream")
+
     return FileResponse(
         path=file_path,
         filename=document.original_filename,
-        media_type="application/octet-stream"
+        media_type=media_type
     )
 
 

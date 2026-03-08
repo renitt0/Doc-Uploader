@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import styles from './Login.module.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,67 +14,52 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    // OAuth2PasswordRequestForm expects 'username' as the email field
     const formData = new URLSearchParams();
     formData.append('username', email);
     formData.append('password', password);
 
     try {
       const response = await api.post('/auth/login', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
-      
       localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('userEmail', email);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
-      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h2>Login</h2>
-        
-        {error && <div className={styles.error}>{error}</div>}
+    <div className="page-center">
+      <div className="card card-sm">
+        <h2 className="mb-md">Login</h2>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <form className="form mt-sm" onSubmit={handleSubmit}>
+          <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
+            <input id="email" type="email" className="input" value={email}
+              onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </div>
 
-          <div className={styles.inputGroup}>
+          <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
+            <input id="password" type="password" className="input" value={password}
+              onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
           </div>
 
-          <button type="submit" className={styles.button} disabled={loading}>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
-        <p className={styles.footer}>
-          Don't have an account? <Link to="/register" className={styles.link}>Register here</Link>
+        <p className="page-footer">
+          Don't have an account?{' '}
+          <Link to="/register" className="link">Register here</Link>
         </p>
       </div>
     </div>

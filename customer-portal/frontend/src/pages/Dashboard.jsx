@@ -204,6 +204,13 @@ const Dashboard = () => {
               {/* ── Desktop Table ── */}
               <div className="file-table table-wrapper">
                 <table className="table">
+                  <colgroup>
+                    <col style={{ width: '35%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '20%' }} />
+                    <col style={{ width: '25%' }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Filename</th><th>Type</th><th>Size</th>

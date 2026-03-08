@@ -358,9 +358,14 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 /* Action td in the desktop file table */
 .table-action-cell {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.table td.table-action-cell {
+  min-width: 200px; /* safety for large action group */
 }
 
 /* Upload button width override (btn-primary defaults to 100%) */

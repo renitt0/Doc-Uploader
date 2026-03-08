@@ -19,23 +19,25 @@ A secure, full-stack document management application built with FastAPI and Reac
 
 ## Project Structure
 
+```
 customer-portal/
 ├── backend/
-│ ├── main.py # FastAPI app and all route definitions
-│ ├── database.py # SQLAlchemy engine and session setup
-│ ├── models.py # User and Document database models
-│ ├── schemas.py # Pydantic request and response schemas
-│ ├── auth.py # Password hashing and JWT logic
-│ ├── uploads/ # Uploaded files stored here (git ignored)
-│ │ └── .gitkeep # Keeps the folder tracked in git
-│ └── requirements.txt
+│   ├── main.py          # FastAPI app and all route definitions
+│   ├── database.py      # SQLAlchemy engine and session setup
+│   ├── models.py        # User and Document database models
+│   ├── schemas.py       # Pydantic request and response schemas
+│   ├── auth.py          # Password hashing and JWT logic
+│   ├── uploads/         # Uploaded files stored here (git ignored)
+│   │   └── .gitkeep     # Keeps the folder tracked in git
+│   └── requirements.txt
 ├── frontend/
-│ ├── src/
-│ │ ├── pages/ # Login, Register, Dashboard
-│ │ ├── services/ # Axios instance and API calls
-│ │ └── App.jsx # Routes setup
-│ └── package.json
+│   ├── src/
+│   │   ├── pages/       # Login, Register, Dashboard
+│   │   ├── services/    # Axios instance and API calls
+│   │   └── App.jsx      # Routes setup
+│   └── package.json
 └── README.md
+```
 
 ---
 
@@ -50,7 +52,7 @@ customer-portal/
 ## Backend Setup
 
 ```bash
-cd backend
+cd customer-portal/backend
 ```
 
 ```bash
@@ -92,7 +94,7 @@ Visit **http://localhost:8000/docs** to verify the API is running and explore al
 ## Frontend Setup
 
 ```bash
-cd frontend
+cd customer-portal/frontend
 ```
 
 ```bash

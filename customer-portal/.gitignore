@@ -1,8 +1,16 @@
+# Folders
+**/__pycache__/
+**/.venv/
+**/node_modules/
 backend/uploads/*
 !backend/uploads/.gitkeep
-__pycache__/
-.venv/
+
+# Env and DB
 .env
-node_modules/
 *.sqlite3
 *.db
+
+# System/IDE
+.DS_Store
+.vscode/
+.idea/

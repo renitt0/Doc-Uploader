@@ -147,3 +147,5 @@ Visit **http://localhost:5173** to open the app.
 | Client-side pre-check | Yes — instant error shown before the API call is made |
 
 Server-side validation is the source of truth. Client-side validation is a UX convenience only.
+
+loom link https://www.loom.com/share/2d27f5fffa0f406988abbb1847da6ee1

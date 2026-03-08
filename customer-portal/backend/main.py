@@ -28,7 +28,10 @@ app = FastAPI(title="Customer Portal API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite default port
+    allow_origins=[
+        "http://localhost:5173",  # Vite default
+        "http://localhost:3000",  # Alternate dev port
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

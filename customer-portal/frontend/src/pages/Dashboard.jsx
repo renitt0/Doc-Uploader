@@ -194,10 +194,11 @@ const Dashboard = () => {
           {listError && <div className="alert alert-error">{listError}</div>}
 
           {loading ? (
-            <p className="empty-state">Loading...</p>
+            <p className="empty-state">Loading your files...</p>
           ) : documents.length === 0 ? (
             <p className="empty-state">No files uploaded yet.</p>
           ) : (
+            <div className="table-wrapper">
             <table className="table">
               <thead>
                 <tr>
@@ -231,6 +232,7 @@ const Dashboard = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </main>

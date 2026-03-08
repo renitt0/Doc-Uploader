@@ -150,6 +150,30 @@ body {
   background-color: var(--color-danger-dk);
 }
 
+.btn-success {
+  background-color: #16a34a;
+  color: white;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #15803d;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: white;
+}
+
 .btn-ghost {
   background: transparent;
   color: white;

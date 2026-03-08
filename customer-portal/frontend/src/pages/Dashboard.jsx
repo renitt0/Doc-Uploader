@@ -5,6 +5,14 @@ import api from '../services/api';
 const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.png', '.docx'];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
+const MIME_TYPES = {
+  '.pdf':  'application/pdf',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
+
+
 const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -90,6 +98,38 @@ const Dashboard = () => {
     }
   };
 
+  const handleView = async (id, fileType) => {
+    try {
+      const response = await api.get(`/documents/${id}/download`, {
+        responseType: 'blob',
+      });
+      const mimeType = MIME_TYPES[fileType] || 'application/octet-stream';
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
+      window.open(blobUrl, '_blank');
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+    } catch {
+      setListError('Failed to open file for viewing.');
+    }
+  };
+
+  const handleDownload = async (id, filename) => {
+    try {
+      const response = await api.get(`/documents/${id}/download`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      setListError('Failed to download file.');
+    }
+  };
+
   const handleDelete = async (docId) => {
     setDeletingId(docId);
     setListError('');
@@ -155,7 +195,15 @@ const Dashboard = () => {
                     <td><span className="badge">{doc.file_type.replace('.', '')}</span></td>
                     <td>{formatSize(doc.file_size)}</td>
                     <td>{formatDate(doc.uploaded_at)}</td>
-                    <td>
+                    <td style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <button className="btn btn-outline"
+                        onClick={() => handleView(doc.id, doc.file_type)}>
+                        View
+                      </button>
+                      <button className="btn btn-success"
+                        onClick={() => handleDownload(doc.id, doc.original_filename)}>
+                        Download
+                      </button>
                       <button className="btn btn-danger"
                         onClick={() => handleDelete(doc.id)}
                         disabled={deletingId === doc.id}>

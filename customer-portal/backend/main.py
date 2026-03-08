@@ -173,3 +173,43 @@ def download_document(
         filename=document.original_filename,
         media_type="application/octet-stream"
     )
+
+
+@app.delete("/documents/{document_id}", tags=["documents"])
+def delete_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a document.
+    Ensures the document belongs to the user before deleting from DB and disk.
+    """
+    # 1. Ownership and existence check
+    document = db.query(Document).filter(Document.id == document_id).first()
+
+    if not document or document.user_id != current_user.id:
+        # We return 404 even if it exists but is owned by someone else
+        # to prevent leaking the existence of other users' files.
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    # 2. Delete from DB first
+    stored_filename = document.stored_filename
+    db.delete(document)
+    db.commit()
+
+    # 3. Delete from disk
+    file_path = UPLOAD_DIR / stored_filename
+    try:
+        if file_path.exists():
+            os.remove(file_path)
+    except Exception:
+        # If file removal fails (e.g. file already gone), we continue silently
+        # since the DB record is already successfully removed.
+        pass
+
+    return {"message": "File deleted successfully"}
+

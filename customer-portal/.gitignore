@@ -1,0 +1,7 @@
+backend/uploads/*
+!backend/uploads/.gitkeep
+__pycache__/
+.venv/
+.env
+node_modules/
+*.sqlite3

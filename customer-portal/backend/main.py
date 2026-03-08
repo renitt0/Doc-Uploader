@@ -3,7 +3,10 @@ import uuid
 from pathlib import Path
 
 import aiofiles
+from typing import List
+
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -124,3 +127,49 @@ async def upload_document(
     db.refresh(db_document)
 
     return db_document
+
+
+@app.get("/documents/", response_model=List[DocumentResponse], tags=["documents"])
+def list_documents(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """List all documents owned by the current user."""
+    return db.query(Document).filter(Document.user_id == current_user.id).all()
+
+
+@app.get("/documents/{document_id}/download", tags=["documents"])
+def download_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Download a document.
+    Ensures the document exists and belongs to the current user.
+    """
+    # Ownership and existence check in DB
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == current_user.id
+    ).first()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    # Physical file existence check
+    file_path = UPLOAD_DIR / document.stored_filename
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on disk"
+        )
+
+    return FileResponse(
+        path=file_path,
+        filename=document.original_filename,
+        media_type="application/octet-stream"
+    )

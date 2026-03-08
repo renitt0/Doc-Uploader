@@ -17,6 +17,28 @@ A secure, full-stack document management application built with FastAPI and Reac
 
 ---
 
+## Project Structure
+
+customer-portal/
+├── backend/
+│ ├── main.py # FastAPI app and all route definitions
+│ ├── database.py # SQLAlchemy engine and session setup
+│ ├── models.py # User and Document database models
+│ ├── schemas.py # Pydantic request and response schemas
+│ ├── auth.py # Password hashing and JWT logic
+│ ├── uploads/ # Uploaded files stored here (git ignored)
+│ │ └── .gitkeep # Keeps the folder tracked in git
+│ └── requirements.txt
+├── frontend/
+│ ├── src/
+│ │ ├── pages/ # Login, Register, Dashboard
+│ │ ├── services/ # Axios instance and API calls
+│ │ └── App.jsx # Routes setup
+│ └── package.json
+└── README.md
+
+---
+
 ## Prerequisites
 
 - Python 3.10+
@@ -91,6 +113,7 @@ Visit **http://localhost:5173** to open the app.
 | -------- | -------------------------- | ------------- | ------------------------------------------------- |
 | `POST`   | `/auth/register`           | No            | Register a new user with email and password       |
 | `POST`   | `/auth/login`              | No            | Log in and receive a JWT access token             |
+| `GET`    | `/auth/me`                 | ✅ Yes        | Get current authenticated user info               |
 | `GET`    | `/documents/`              | ✅ Yes        | List all documents belonging to the current user  |
 | `POST`   | `/documents/upload`        | ✅ Yes        | Upload a new file (validated before saving)       |
 | `GET`    | `/documents/{id}/download` | ✅ Yes        | Download or view a file owned by the current user |
@@ -107,6 +130,8 @@ Visit **http://localhost:5173** to open the app.
 - **JWT expiry.** Tokens expire after 30 minutes. The frontend's global Axios interceptor automatically clears the session and redirects to `/login` on any `401` response.
 
 - **Strict ownership checks.** Every document endpoint filters by both `document_id` AND `user_id`. A user querying another user's document ID receives a `404` — not a `403` — to avoid leaking that the document exists.
+
+- **Uploads folder:** The uploads/ directory is tracked in git via a .gitkeep file but its contents are ignored. The folder is also created automatically at app startup using os.makedirs("uploads", exist_ok=True) so no manual setup is needed.
 
 ---
 

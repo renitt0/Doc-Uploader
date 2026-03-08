@@ -1,15 +1,24 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+import os
+import uuid
+from pathlib import Path
+
+import aiofiles
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 import models
 from auth import create_access_token, get_current_user, hash_password, verify_password
 from database import Base, engine, get_db
-from models import User
-from schemas import Token, UserCreate, UserResponse
+from models import Document, User
+from schemas import DocumentResponse, Token, UserCreate, UserResponse
 
 # Create tables
 Base.metadata.create_all(bind=engine)
+
+# Ensure uploads directory exists
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Customer Portal API")
 
@@ -63,3 +72,55 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def get_me(current_user: User = Depends(get_current_user)):
     """A protected route example that returns the current logged-in user."""
     return current_user
+
+
+@app.post("/documents/upload", response_model=DocumentResponse, tags=["documents"])
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload a document. Validates file extension and size (max 10MB).
+    Stores the file with a UUID and records metadata in the database.
+    """
+    # 1. Check file extension
+    allowed_extensions = {".pdf", ".jpg", ".png", ".docx"}
+    extension = Path(file.filename).suffix.lower()
+    if extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Allowed: {', '.join(sorted(allowed_extensions))}"
+        )
+
+    # 2. Check file size (Read into memory to check size)
+    contents = await file.read()
+    file_size = len(contents)
+    max_size = 10 * 1024 * 1024  # 10MB
+    if file_size > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds 10MB limit"
+        )
+
+    # 3. Generate stored name
+    stored_name = f"{uuid.uuid4()}{extension}"
+    file_path = UPLOAD_DIR / stored_name
+
+    # 4. Write to disk
+    async with aiofiles.open(file_path, "wb") as f:
+        await f.write(contents)
+
+    # 5. Save to database
+    db_document = Document(
+        user_id=current_user.id,
+        original_filename=file.filename,
+        stored_filename=stored_name,
+        file_size=file_size,
+        file_type=extension
+    )
+    db.add(db_document)
+    db.commit()
+    db.refresh(db_document)
+
+    return db_document

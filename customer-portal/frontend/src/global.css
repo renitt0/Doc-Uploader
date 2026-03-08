@@ -1,7 +1,7 @@
 /* ── Design Tokens ──────────────────────────────────────────────────────────── */
 :root {
-  --color-primary:     #007bff;
-  --color-primary-dk:  #0056b3;
+  --color-primary:     #0d9488;
+  --color-primary-dk:  #0f766e;
   --color-danger:      #ff4444;
   --color-danger-dk:   #cc0000;
   --color-bg:          #f0f4f8;
@@ -230,7 +230,7 @@ body {
 }
 
 .app-header-title span {
-  color: #7b9cff;
+  color: var(--color-primary);
 }
 
 /* ── File Table ─────────────────────────────────────────────────────────────── */
@@ -320,6 +320,77 @@ body {
 .mb-md { margin-bottom: 1.5rem; }
 .mt-sm { margin-top: 0.75rem; }
 
+/* Action td in the desktop file table */
+.table-action-cell {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Upload button width override (btn-primary defaults to 100%) */
+.btn-auto { width: auto !important; }
+
+/* Label swap helpers (legacy, kept for safety) */
+.label-desktop { display: inline; }
+.label-mobile  { display: none; }
+
+/* ── Desktop/Mobile layout toggle ───────────────────────────────────────────── */
+.file-table { display: block; }   /* shown on desktop */
+.file-cards {
+  display: none;                   /* hidden on desktop */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px;
+  overflow-x: hidden;
+}
+
+/* ── Mobile File Cards ───────────────────────────────────────────────────────── */
+.file-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.file-card-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.file-card-meta {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.file-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+.file-card-actions .btn {
+  flex: 1;
+  text-align: center;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+}
+
 /* ── Table Wrapper (horizontal scroll on mobile) ────────────────────────────── */
 .table-wrapper {
   width: 100%;
@@ -378,5 +449,51 @@ body {
   .table td, .table th {
     padding: 0.6rem 0.75rem;
     font-size: 0.85rem;
+  }
+}
+
+/* ── Mobile: table action buttons & header ──────────────────────────────────── */
+/* ── Mobile: show cards, hide table (≤850px) ───────────────────────────────── */
+@media (max-width: 850px) {
+  .file-table { display: none; }
+  .file-cards { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Stack the upload row vertically */
+  .upload-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-input {
+    min-width: unset;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .upload-row .btn {
+    width: 100% !important;
+  }
+
+  /* Prevent page overflow on mobile */
+  .page-full, .content-area {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-header-title {
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .btn-ghost {
+    flex-shrink: 0;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
   }
 }

@@ -70,6 +70,7 @@ const Dashboard = () => {
   useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
 
   const handleLogout = () => {
+    if (!window.confirm('Are you sure you want to log out?')) return;
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
     navigate('/login');
@@ -148,6 +149,7 @@ const Dashboard = () => {
   };
 
   const handleDelete = async (docId) => {
+    if (!window.confirm('Are you sure you want to delete this file? This cannot be undone.')) return;
     setDeletingId(docId);
     setListError('');
     try {
@@ -178,8 +180,8 @@ const Dashboard = () => {
             <div className="upload-row">
               <input type="file" ref={fileInputRef} className="file-input"
                 accept=".pdf,.jpg,.png,.docx" />
-              <button type="submit" className="btn btn-primary"
-                style={{ width: 'auto' }} disabled={uploading}>
+              <button type="submit" className="btn btn-primary btn-auto"
+                disabled={uploading}>
                 {uploading ? 'Uploading...' : 'Upload'}
               </button>
             </div>
@@ -198,41 +200,65 @@ const Dashboard = () => {
           ) : documents.length === 0 ? (
             <p className="empty-state">No files uploaded yet.</p>
           ) : (
-            <div className="table-wrapper">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Filename</th><th>Type</th><th>Size</th>
-                  <th>Uploaded At</th><th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              {/* ── Desktop Table ── */}
+              <div className="file-table table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th><th>Type</th><th>Size</th>
+                      <th>Uploaded At</th><th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.original_filename}</td>
+                        <td><span className="badge">{doc.file_type.replace('.', '')}</span></td>
+                        <td>{formatSize(doc.file_size)}</td>
+                        <td>{formatDate(doc.uploaded_at)}</td>
+                        <td className="table-action-cell">
+                          <button className="btn btn-outline"
+                            onClick={() => handleView(doc.id, doc.file_type)}>View</button>
+                          <button className="btn btn-success"
+                            onClick={() => handleDownload(doc.id, doc.original_filename)}>Download</button>
+                          <button className="btn btn-danger"
+                            onClick={() => handleDelete(doc.id)}
+                            disabled={deletingId === doc.id}>
+                            {deletingId === doc.id ? '...' : 'Delete'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Mobile Cards ── */}
+              <div className="file-cards">
                 {documents.map((doc) => (
-                  <tr key={doc.id}>
-                    <td>{doc.original_filename}</td>
-                    <td><span className="badge">{doc.file_type.replace('.', '')}</span></td>
-                    <td>{formatSize(doc.file_size)}</td>
-                    <td>{formatDate(doc.uploaded_at)}</td>
-                    <td style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                  <div key={doc.id} className="file-card">
+                    <p className="file-card-name">{doc.original_filename}</p>
+                    <p className="file-card-meta">
+                      <span className="badge">{doc.file_type.replace('.', '')}</span>
+                      {' · '}{formatSize(doc.file_size)}
+                      {' · '}{formatDate(doc.uploaded_at)}
+                    </p>
+                    <div className="file-card-actions">
                       <button className="btn btn-outline"
-                        onClick={() => handleView(doc.id, doc.file_type)}>
-                        View
-                      </button>
+                        onClick={() => handleView(doc.id, doc.file_type)}>View</button>
                       <button className="btn btn-success"
-                        onClick={() => handleDownload(doc.id, doc.original_filename)}>
-                        Download
-                      </button>
+                        onClick={() => handleDownload(doc.id, doc.original_filename)}>Save</button>
                       <button className="btn btn-danger"
                         onClick={() => handleDelete(doc.id)}
                         disabled={deletingId === doc.id}>
                         {deletingId === doc.id ? '...' : 'Delete'}
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </main>

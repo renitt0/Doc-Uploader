@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -12,7 +12,6 @@ const MIME_TYPES = {
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 };
 
-
 const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -25,37 +24,50 @@ const formatDate = (iso) =>
     hour: '2-digit', minute: '2-digit',
   });
 
+// Auto-dismiss helper: sets a message and clears it after `ms` milliseconds
+const useAutoDismiss = (ms = 5000) => {
+  const [msg, setMsg] = useState('');
+  const timerRef = useRef(null);
+
+  const show = useCallback((text) => {
+    clearTimeout(timerRef.current);
+    setMsg(text);
+    timerRef.current = setTimeout(() => setMsg(''), ms);
+  }, [ms]);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  return [msg, show];
+};
+
 const Dashboard = () => {
-  const [documents, setDocuments]     = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [uploadError, setUploadError] = useState('');
-  const [uploadSuccess, setUploadSuccess] = useState('');
-  const [uploading, setUploading]     = useState(false);
-  const [deletingId, setDeletingId]   = useState(null);
-  const [listError, setListError]     = useState('');
+  const [documents, setDocuments]   = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [uploading, setUploading]   = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [listError, setListError]   = useState('');
+
+  const [uploadError,   showUploadError]   = useAutoDismiss(5000);
+  const [uploadSuccess, showUploadSuccess] = useAutoDismiss(5000);
+
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const userEmail = localStorage.getItem('userEmail') || 'User';
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
       const res = await api.get('/documents/');
       setDocuments(res.data);
       setListError('');
-    } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userEmail');
-        navigate('/login');
-      } else {
-        setListError('Failed to load documents.');
-      }
+    } catch {
+      // 401 is handled globally by api.js interceptor
+      setListError('Failed to load files. Please refresh.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchDocuments(); }, []);
+  useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -65,19 +77,23 @@ const Dashboard = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    setUploadError('');
-    setUploadSuccess('');
 
     const file = fileInputRef.current?.files[0];
-    if (!file) { setUploadError('Please select a file.'); return; }
-
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      setUploadError(`Invalid type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`);
+    if (!file) {
+      showUploadError('Please select a file before uploading.');
       return;
     }
+
+    // Client-side extension check
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      showUploadError('Invalid file type. Only .pdf, .jpg, .png, .docx are allowed.');
+      return;
+    }
+
+    // Client-side size check
     if (file.size > MAX_SIZE_BYTES) {
-      setUploadError('File exceeds 10MB limit.');
+      showUploadError('File too large. Maximum size is 10MB.');
       return;
     }
 
@@ -88,11 +104,12 @@ const Dashboard = () => {
       await api.post('/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setUploadSuccess('File uploaded successfully!');
+      showUploadSuccess('File uploaded successfully!');
       if (fileInputRef.current) fileInputRef.current.value = '';
       await fetchDocuments();
     } catch (err) {
-      setUploadError(err.response?.data?.detail || 'Upload failed.');
+      const detail = err.response?.data?.detail;
+      showUploadError(detail || 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -126,7 +143,7 @@ const Dashboard = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      setListError('Failed to download file.');
+      setListError('Failed to download file. Please try again.');
     }
   };
 
@@ -137,7 +154,7 @@ const Dashboard = () => {
       await api.delete(`/documents/${docId}`);
       setDocuments((prev) => prev.filter((d) => d.id !== docId));
     } catch {
-      setListError('Failed to delete. Please try again.');
+      setListError('Failed to delete file. Please try again.');
     } finally {
       setDeletingId(null);
     }
